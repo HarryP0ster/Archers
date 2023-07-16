@@ -15,27 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Source\main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="Source\glad.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="GLAPI.cpp">
+    <ClCompile Include="Source\GLAPI.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FileManager.h">
+    <ClInclude Include="Source\FileManager.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="GLAPI.h">
+    <ClInclude Include="Source\GLAPI.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Game.h">
+    <ClInclude Include="Source\Game.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="EntityComponents.h">
+    <ClInclude Include="Source\EntityComponents.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
