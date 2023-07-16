@@ -131,7 +131,7 @@ bool OpenGLAPI::GLCompileShader(const char* shader_path, unsigned int type, unsi
     return success;
 }
 
-Mesh* OpenGLAPI::GenerateSphereMesh(float radius, int rings, int slices)
+Mesh OpenGLAPI::GenerateSphereMesh(float radius, int rings, int slices)
 {
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -181,5 +181,5 @@ Mesh* OpenGLAPI::GenerateSphereMesh(float radius, int rings, int slices)
 		}
 	}
 
-	return new Mesh(vertices, indices);
+	return Mesh(vertices, indices);
 }

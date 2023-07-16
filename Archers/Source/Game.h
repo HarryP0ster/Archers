@@ -127,6 +127,23 @@ public:
 private:
 	void UpdateSimulation()
 	{
+		for (auto object : ent_registry.view<Velocity>())
+		{
+			glm::vec3 new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
+			if (new_pos.x >= 48.f || new_pos.x <= -48.f)
+			{
+				ent_registry.get<Velocity>(object).vel.x *= -1.f;
+				new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
+			}
+			if (new_pos.z >= 48.f || new_pos.z <= -48.f)
+			{
+				ent_registry.get<Velocity>(object).vel.z *= -1.f;
+				new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
+			}
+
+			ent_registry.get<Position>(object).coord = new_pos;
+		}
+
 		for (auto object : ent_registry.view<Trajectory>())
 		{
 			Trajectory& project_traj = ent_registry.get<Trajectory>(object);
@@ -223,23 +240,6 @@ private:
 	{
 		for (auto object : ent_registry.view<MeshComponent>())
 		{
-			if (ent_registry.try_get<Velocity>(object) != nullptr)
-			{
-				glm::vec3 new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
-				if (new_pos.x >= 48.f || new_pos.x <= -48.f)
-				{
-					ent_registry.get<Velocity>(object).vel.x *= -1.f;
-					new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
-				}
-				if (new_pos.z >= 48.f || new_pos.z <= -48.f)
-				{
-					ent_registry.get<Velocity>(object).vel.z *= -1.f;
-					new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
-				}
-
-				ent_registry.get<Position>(object).coord = new_pos;
-			}
-
 			MeshComponent& object_mesh = ent_registry.get<MeshComponent>(object);
 			glm::mat4 model = glm::translate(glm::mat4(1.f), ent_registry.get<Position>(object).coord) * glm::mat4_cast(ent_registry.get<Orientation>(object).ori);
 			//mWorld
@@ -290,7 +290,8 @@ private:
 
 		arrow = new Mesh(arrow_vertices, indices);
 		tile = new Mesh(tile_vertices, indices);
-		archer = OpenGLAPI::GenerateSphereMesh(1.7f, 32, 32);
+		Mesh sphere = OpenGLAPI::GenerateSphereMesh(1.7f, 32, 32);
+		archer = new Mesh(sphere);
 		archer->calculate_normals();
 		tile->calculate_normals();
 	}

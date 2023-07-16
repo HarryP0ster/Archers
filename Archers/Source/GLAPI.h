@@ -61,5 +61,5 @@ class OpenGLAPI
 public:
 	static bool GLInit(GLFWwindow** outWindow, int window_width, int window_height, const char* app_name);
 	static bool GLCompileShader(const char* shader_path, unsigned int type, unsigned int program);
-	static Mesh* GenerateSphereMesh(float radius, int rings, int slices);
+	static Mesh GenerateSphereMesh(float radius, int rings, int slices);
 };
