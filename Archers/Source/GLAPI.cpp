@@ -22,6 +22,7 @@ Mesh::Mesh(const Mesh& other)
 	inds.resize(other.inds.size());
 	std::copy(other.verts.begin(), other.verts.end(), verts.begin());
 	std::copy(other.inds.begin(), other.inds.end(), inds.begin());
+
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &VIO);
 	glGenVertexArrays(1, &VAO);
@@ -130,7 +131,7 @@ bool OpenGLAPI::GLCompileShader(const char* shader_path, unsigned int type, unsi
     return success;
 }
 
-Mesh OpenGLAPI::GenerateSphereMesh(float radius, int rings, int slices)
+Mesh* OpenGLAPI::GenerateSphereMesh(float radius, int rings, int slices)
 {
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -180,5 +181,5 @@ Mesh OpenGLAPI::GenerateSphereMesh(float radius, int rings, int slices)
 		}
 	}
 
-	return Mesh(vertices, indices);
+	return new Mesh(vertices, indices);
 }

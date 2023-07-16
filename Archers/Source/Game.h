@@ -12,7 +12,12 @@ public:
 
 	~ArchersGame()
 	{
+		delete archer;
+		delete arrow;
+		delete tile;
 		ent_registry.clear();
+		glDeleteProgram(shaderProgram);
+		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
 
@@ -283,11 +288,11 @@ private:
 			7, 6, 3, 2, 3, 6
 		};
 
-		arrow = Mesh(arrow_vertices, indices);
-		tile = Mesh(tile_vertices, indices);
+		arrow = new Mesh(arrow_vertices, indices);
+		tile = new Mesh(tile_vertices, indices);
 		archer = OpenGLAPI::GenerateSphereMesh(1.7f, 32, 32);
-		archer.calculate_normals();
-		tile.calculate_normals();
+		archer->calculate_normals();
+		tile->calculate_normals();
 	}
 
 	void SetupField(int tilesH, int tilesV, int tileSize)
@@ -302,7 +307,7 @@ private:
 				entt::entity entity = ent_registry.create();
 				ent_registry.emplace<Position>(entity, glm::vec3(posX, 0, posZ));
 				ent_registry.emplace<Orientation>(entity, glm::angleAxis(0.f, glm::vec3(0, 1, 0)));
-				ent_registry.emplace<MeshComponent>(entity, &tile, glm::vec3(0.9f), glm::vec3(0.f, 1.f, 0.f));
+				ent_registry.emplace<MeshComponent>(entity, tile, glm::vec3(0.9f), glm::vec3(0.f, 1.f, 0.f));
 				posZ += tileSize;
 			}
 			posZ = startPoint;
@@ -315,7 +320,7 @@ private:
 		entt::entity entity = ent_registry.create();
 		ent_registry.emplace<Position>(entity, glm::vec3(-40, 2.5, -40));
 		ent_registry.emplace<Orientation>(entity, glm::angleAxis(0.f, glm::vec3(0, 1, 0)));
-		ent_registry.emplace<MeshComponent>(entity, &archer, glm::vec3(1.f), glm::vec3(1.f, 0.f, 0.f));
+		ent_registry.emplace<MeshComponent>(entity, archer, glm::vec3(1.f), glm::vec3(1.f, 0.f, 0.f));
 		ent_registry.emplace<Archer>(entity, Archer(true));
 		ent_registry.emplace<Health>(entity);
 		ent_registry.emplace<Velocity>(entity, glm::vec3(glm::vec3(0.1f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX), 0.f, 0.1f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX))));
@@ -323,7 +328,7 @@ private:
 		entt::entity entity2 = ent_registry.create();
 		ent_registry.emplace<Position>(entity2, glm::vec3(40, 2.5, 40));
 		ent_registry.emplace<Orientation>(entity2, glm::angleAxis(0.f, glm::vec3(0, 1, 0)));
-		ent_registry.emplace<MeshComponent>(entity2, &archer, glm::vec3(1.f), glm::vec3(0.f, 0.f, 1.f));
+		ent_registry.emplace<MeshComponent>(entity2, archer, glm::vec3(1.f), glm::vec3(0.f, 0.f, 1.f));
 		ent_registry.emplace<Archer>(entity2, Archer(false));
 		ent_registry.emplace<Health>(entity2);
 		ent_registry.emplace<Velocity>(entity2, glm::vec3(glm::vec3(-0.1f - static_cast <float> (rand()) / static_cast <float> (RAND_MAX), 0.f, -0.1f - static_cast <float> (rand()) / static_cast <float> (RAND_MAX))));
@@ -344,7 +349,7 @@ private:
 			ent_registry.emplace<Position>(projectile, glm::vec3(pos));
 			ent_registry.emplace<Orientation>(projectile, q);
 			ent_registry.emplace<Trajectory>(projectile, prj_trj);
-			ent_registry.emplace<MeshComponent>(projectile, &arrow, glm::vec3(1.f), glm::vec3(0.f));
+			ent_registry.emplace<MeshComponent>(projectile, arrow, glm::vec3(1.f), glm::vec3(0.f));
 
 			ent_registry.get<Archer>(archer).Reload();
 		}
@@ -358,8 +363,8 @@ private:
 	float camera_angle = 0.f;
 	const glm::vec3 camera_sp = {-80, 60, 80};
 
-	Mesh tile;
-	Mesh arrow;
-	Mesh archer;
+	Mesh* tile;
+	Mesh* arrow;
+	Mesh* archer;
 	int archers_count = 0;
 };

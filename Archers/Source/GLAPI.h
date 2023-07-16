@@ -17,7 +17,12 @@ struct Mesh
 	Mesh() = default;
 	Mesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
 	Mesh(const Mesh& other);
-	~Mesh() {};
+	~Mesh() 
+	{
+		GLuint buffers[2] = { VBO, VIO };
+		glDeleteBuffers(2, buffers);
+		glDeleteVertexArrays(1, &VAO);
+	};
 
 	size_t NumVerts()
 	{
@@ -56,5 +61,5 @@ class OpenGLAPI
 public:
 	static bool GLInit(GLFWwindow** outWindow, int window_width, int window_height, const char* app_name);
 	static bool GLCompileShader(const char* shader_path, unsigned int type, unsigned int program);
-	static Mesh GenerateSphereMesh(float radius, int rings, int slices);
+	static Mesh* GenerateSphereMesh(float radius, int rings, int slices);
 };
