@@ -2,12 +2,15 @@
 #include "EntityComponents.h"
 #include "FileManager.h"
 
+const char* vertex_shader = "#version 460 core\nlayout(location = 0) in vec3 vecPos;layout(location = 1) in vec3 vecNorm;layout(location = 0) out vec3 fragColor;layout(location = 1) out vec3 fragNorm;layout(location = 2) out vec3 position;layout(location = 0) uniform mat4 mWorld;layout(location = 1) uniform mat4 mProj;layout(location = 2) uniform mat4 mView;layout(location = 3) uniform vec3 scale;layout(location = 4) uniform vec3 color;void main(){gl_Position = mProj * mView * mWorld * vec4(scale * vecPos, 1.0);fragColor = color;fragNorm = vecNorm;position = vecPos;}";
+const char* fragment_shader = "#version 460 core\nlayout(location = 0) in vec3 fragColor;layout(location = 1) in vec3 fragNorm;layout(location = 2) in vec3 position;out vec4 outColor;void main(){const vec3 lightPos = vec3(25, 50, 0);float diffuse = max(0.65, dot(normalize(fragNorm), normalize(lightPos - position)));outColor = vec4(fragColor * diffuse, 1.0);}";
+
 class ArchersGame
 {
 public:
 	ArchersGame()
 	{
-;
+
 	}
 
 	~ArchersGame()
@@ -25,8 +28,8 @@ public:
 	{
 		bool res = OpenGLAPI::GLInit(&window, 1280, 720, "Archers");
 		shaderProgram = glCreateProgram();
-		res = res & OpenGLAPI::GLCompileShader("Shaders\\default.vert", GL_VERTEX_SHADER, shaderProgram);
-		res = res & OpenGLAPI::GLCompileShader("Shaders\\default.frag", GL_FRAGMENT_SHADER, shaderProgram);
+		res = res & OpenGLAPI::GLCompileShader(vertex_shader, GL_VERTEX_SHADER, shaderProgram);
+		res = res & OpenGLAPI::GLCompileShader(fragment_shader, GL_FRAGMENT_SHADER, shaderProgram);
 
 		if (res)
 		{
@@ -45,6 +48,7 @@ public:
 	void SetupEvents()
 	{
 		glfwSetWindowUserPointer(window, this);
+		//resize viewport
 		glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int new_width, int new_height) 
 		{
 			glViewport(0, 0, new_width, new_height);
@@ -57,6 +61,7 @@ public:
 			{
 				switch (key)
 				{
+				//move camera
 				case GLFW_KEY_LEFT:
 					context->UpdateCamera(-1);
 					break;
@@ -114,6 +119,7 @@ public:
 		}
 	}
 
+	//Camera position control with arrows
 	void UpdateCamera(float delta)
 	{
 		camera_angle += delta;
@@ -125,8 +131,10 @@ public:
 	}
 
 private:
+	//update objects on scene
 	void UpdateSimulation()
 	{
+		//move objects according to their linear velocity
 		for (auto object : ent_registry.view<Velocity>())
 		{
 			glm::vec3 new_pos = ent_registry.get<Position>(object).coord + ent_registry.get<Velocity>(object).vel;
@@ -143,7 +151,7 @@ private:
 
 			ent_registry.get<Position>(object).coord = new_pos;
 		}
-
+		//update projectile trajectories
 		for (auto object : ent_registry.view<Trajectory>())
 		{
 			Trajectory& project_traj = ent_registry.get<Trajectory>(object);
@@ -178,13 +186,14 @@ private:
 		std::vector<float> distances;
 		distances.resize(archer_entt.size());
 		targets.resize(distances.size());
-
+		//update archers behaviours
 		for (int i = 0; i < archer_entt.size(); i++)
 		{
+			//check every archer against every other archer, that was not distanced before
 			for (int j = i+1; j < archer_entt.size(); j++)
 			{
 				float distance = glm::length(ent_registry.get<Position>(archer_entt[i]).coord - ent_registry.get<Position>(archer_entt[j]).coord);
-
+				//if archers are from different teams check for distance
 				if (ent_registry.get<Archer>(archer_entt[i]).IsRed() != ent_registry.get<Archer>(archer_entt[j]).IsRed())
 				{
 					if (distances[i] == 0 || distances[i] > distance)
@@ -199,6 +208,7 @@ private:
 						targets[j] = i;
 					}
 				}
+				//if archers are on the same team, check for collision
 				else
 				{
 					if (distance <= 3.4f)
@@ -210,21 +220,24 @@ private:
 					}
 				}
 			}
-
+			//archer's state
 			if (distances[i] != 0.f)
 			{
 				glm::vec3 dir = glm::normalize(glm::vec3(ent_registry.get<Position>(archer_entt[targets[i]]).coord - ent_registry.get<Position>(archer_entt[i]).coord));
-
+				//friendly collision is top priority
 				if (distances[i] == -1 && glm::dot(ent_registry.get<Velocity>(archer_entt[i]).vel, dir) >= 0)
 				{
+					//move in perpendicular direction from ally
 					ent_registry.get<Velocity>(archer_entt[i]) = glm::cross(glm::vec3(0.f, 1.f, 0.f), glm::vec3(-0.1f - static_cast <float> (rand()) / static_cast <float> (RAND_MAX), 0.f, -0.1f - static_cast <float> (rand()) / static_cast <float> (RAND_MAX)) * dir);
 				}
 				else if (distances[i] > 40.f)
 				{
+					//move closer to foe
 					ent_registry.get<Velocity>(archer_entt[i]) = glm::vec3(1.f, 0.f, 1.f) * dir;
 				}
 				else if (distances[i] > 0 && distances[i] <= 40.f && ent_registry.get<Archer>(archer_entt[i]).CanShoot())
 				{
+					//enemy is close enough, shoot
 					ent_registry.get<Velocity>(archer_entt[i]) = glm::vec3(0.f, 0.f, 0.f);
 					ShootProjectile(archer_entt[i], ent_registry.get<Position>(archer_entt[targets[i]]).coord);
 				}
@@ -235,7 +248,7 @@ private:
 			}
 		}
 	}
-
+	
 	void DrawFrame()
 	{
 		for (auto object : ent_registry.view<MeshComponent>())
@@ -257,6 +270,7 @@ private:
 
 	void LoadAssets()
 	{
+		// 10x10 tiles
 		std::vector<Vertex> tile_vertices = {
 			{{5.f, 0.f, 5.f}, {1.f, 1.f, 1.f}},
 			{{5.f, 0.f, -5.f}, {1.f, 1.f, 1.f}},
@@ -267,7 +281,7 @@ private:
 			{{-5.f, -2.f, 5.f}, {1.f, 1.f, 1.f}},
 			{{-5.f, -2.f, -5.f}, {1.f, 1.f, 1.f}}
 		};
-
+		//arrows
 		std::vector<Vertex> arrow_vertices = {
 			{{0.1f, 0.1f, 1.5f}, {1.f, 1.f, 1.f}},
 			{{0.1f, 0.1f, -1.5f}, {1.f, 1.f, 1.f}},
@@ -278,7 +292,7 @@ private:
 			{{-0.1f, -0.1f, 1.5f}, {1.f, 1.f, 1.f}},
 			{{-0.1f, -0.1f, -1.5f}, {1.f, 1.f, 1.f}}
 		};
-
+		//indices are shared between tiles and arrows
 		std::vector<uint32_t> indices = {
 			0, 1, 2, 2, 1, 3,
 			6, 5, 4, 7, 5, 6,
@@ -290,6 +304,7 @@ private:
 
 		arrow = new Mesh(arrow_vertices, indices);
 		tile = new Mesh(tile_vertices, indices);
+		//arher is a sphere with R=1.7
 		Mesh sphere = OpenGLAPI::GenerateSphereMesh(1.7f, 32, 32);
 		archer = new Mesh(sphere);
 		archer->calculate_normals();
@@ -335,6 +350,7 @@ private:
 		ent_registry.emplace<Velocity>(entity2, glm::vec3(glm::vec3(-0.1f - static_cast <float> (rand()) / static_cast <float> (RAND_MAX), 0.f, -0.1f - static_cast <float> (rand()) / static_cast <float> (RAND_MAX))));
 	}
 
+	//projectile is shot from archer's head to the target's position
 	void ShootProjectile(entt::entity archer, glm::vec3 target)
 	{
 		if (ent_registry.try_get<Archer>(archer) != nullptr)
@@ -351,7 +367,6 @@ private:
 			ent_registry.emplace<Orientation>(projectile, q);
 			ent_registry.emplace<Trajectory>(projectile, prj_trj);
 			ent_registry.emplace<MeshComponent>(projectile, arrow, glm::vec3(1.f), glm::vec3(0.f));
-
 			ent_registry.get<Archer>(archer).Reload();
 		}
 	}

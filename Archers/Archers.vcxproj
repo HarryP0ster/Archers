@@ -130,7 +130,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\glfw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(ProjectName)\Shaders" "$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\Shaders"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -153,7 +154,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs\glfw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(ProjectName)\Shaders" "$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\Shaders"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

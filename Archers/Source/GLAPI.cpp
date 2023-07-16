@@ -113,13 +113,12 @@ bool OpenGLAPI::GLInit(GLFWwindow** outWindow, int window_width, int window_heig
     return true;
 }
 
-bool OpenGLAPI::GLCompileShader(const char* shader_path, unsigned int type, unsigned int program)
+bool OpenGLAPI::GLCompileShader(const char* shader_source, unsigned int type, unsigned int program)
 {
     unsigned int shader;
     shader = glCreateShader(type);
 
-    auto shaderSource = FileManager::ReadFile(shader_path);
-    const char* shaderCode = shaderSource.data();
+    const char* shaderCode = shader_source;
     glShaderSource(shader, 1, &shaderCode, NULL);
     glCompileShader(shader);
     glAttachShader(program, shader);
